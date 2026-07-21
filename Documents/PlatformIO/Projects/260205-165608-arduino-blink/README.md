@@ -1,27 +1,52 @@
-How to build PlatformIO based project
-=====================================
+# 🌬️ ESP32-S3 PM2.5/PM10 空气质量监测仪 (Air Quality Monitor)
 
-1. [Install PlatformIO Core](https://docs.platformio.org/page/core.html)
-2. Download [development platform with examples](https://github.com/platformio/platform-espressif32/archive/develop.zip)
-3. Extract ZIP archive
-4. Run these commands:
+> **⚠️ 项目状态：开发中 (WIP)**
+> 当前版本仅支持 PM2.5 和 PM10 粉尘浓度检测。温湿度、VOC、甲醛及 CO2 传感器驱动尚未完成，后续版本将逐步集成。
 
-```shell
-# Change directory to example
-$ cd platform-espressif32/examples/arduino-blink
+## 📖 项目简介
+本项目是一个基于 **ESP32-S3** 的轻量化空气质量监测终端。它利用激光散射原理检测空气中的颗粒物浓度，并通过 0.96寸 OLED 屏幕实时显示数据。该项目旨在提供一个低成本、高精度的室内粉尘监测解决方案，适用于智能家居环境监测或 IoT 数据采集原型。
 
-# Build project
-$ pio run
+## ✨ 主要功能
+- **双参数监测**：精准检测 PM2.5 与 PM10 浓度（单位：μg/m³）。
+- **实时显示**：通过 I2C 接口的 0.96寸 OLED 屏幕刷新粉尘数据。
+- **高性能主控**：使用 ESP32-S3，支持 Wi-Fi/蓝牙，方便后续扩展云端上传或 App 控制。
+- **自动上传**：传感器模组默认以 1s 周期通过 UART 自动上传数据。
 
-# Upload firmware
-$ pio run --target upload
+## 🛠️ 硬件清单 (BOM)
 
-# Build specific environment
-$ pio run -e esp32dev
+| 组件名称 | 规格/型号 | 数量 | 备注 |
+| :--- | :--- | :--- | :--- |
+| **主控板** | ESP32-S3-DevKitC-1 | 1 | 双核 240MHz, 内置 Wi-Fi/BT |
+| **空气传感器模组** | AIR-MOD-001 (综合型) | 1 | 仅启用 PM2.5/PM10 激光粉尘传感器部分 |
+| **显示屏** | 0.96寸 OLED | 1 | 分辨率 128x64, I2C 接口, SSD1306 驱动 |
+| **连接线** | 杜邦线 (母对母/公对母) | 若干 | 用于连接模块 |
+| **电源** | USB-C 数据线 | 1 | 供电及程序烧录 (5V) |
 
-# Upload firmware for the specific environment
-$ pio run -e esp32dev --target upload
+## 🔌 硬件接线指南
 
-# Clean build files
-$ pio run --target clean
-```
+### 1. 综合空气传感器模组 (UART 通信)
+该模组采用 TTL 串口通信，波特率 **9600**。当前仅读取 PM2.5/PM10 数据字段。
+
+| 传感器模组引脚 | ESP32-S3 引脚 (示例) | 说明 |
+| :--- | :--- | :--- |
+| **5V** | 5V (VIN) | 红色线，电源正极 |
+| **GND** | GND | 黑色线，电源地 |
+| **TX** | RX (例如 GPIO 16) | 白色线，发送端接接收端 |
+| **RX** | TX (例如 GPIO 17) | 绿色线，接收端接发送端 |
+
+### 2. OLED 显示屏 (I2C 通信)
+
+| OLED 引脚 | ESP32-S3 引脚 (示例) | 说明 |
+| :--- | :--- | :--- |
+| **VCC** | 3.3V | 电源正极 |
+| **GND** | GND | 电源地 |
+| **SCL** | SCL (例如 GPIO 8) | 时钟线 |
+| **SDA** | SDA (例如 GPIO 7) | 数据线 |
+
+## 💻 软件依赖
+本项目基于 PlatformIO 开发，请在 `platformio.ini` 中包含以下库依赖：
+
+```ini
+lib_deps =
+    adafruit/Adafruit SSD1306 @ ^2.5.7
+    adafruit/Adafruit GFX Library @ ^1.11.5
